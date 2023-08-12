@@ -16,7 +16,7 @@
                 <span class="p-inputgroup-addon">
                     <i class="pi pi-key"></i>
                 </span>
-                <Password placeholder="Password" />
+                <Password v-model="password" placeholder="Password" />
         </div>
         <div class="card flex justify-content-left align-items-center" >
             <h3 class="mr-2">Remember Me?</h3>
@@ -30,7 +30,7 @@
 export default {
     data() {
         return {
-            value: null,
+            password: null,
             remember: false
         }
     },
@@ -50,7 +50,7 @@ export default {
         border-radius: 8px;
         width: 85%;
         max-width: 600px;
-        margin: 0 auto;
+        margin: 15vh auto;
         border: 3px solid rgb(174, 174, 174);
         background-color: white;
     }

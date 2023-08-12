@@ -1,7 +1,11 @@
 <template>
   <Login v-if="!loggedIn && !remember && !signup" @signup="this.signup = true" @login="login"></Login>
   <Signup v-if="!loggedIn && !remember && signup" @back="this.signup = false"></Signup>
-  <MainPage v-if="loggedIn && !signup" @logout="this.loggedIn = false"></MainPage>
+  <MainPage 
+  v-if="loggedIn && !signup" 
+  @logout="this.loggedIn = false"
+  :username="this.username"
+  ></MainPage>
 </template>
 
 <script>
@@ -21,8 +25,8 @@ export default {
       loggedIn: true,
       signup: false,
       remember: false,
-      userId: '',
-      username: ''
+      userId: '12349876',
+      username: 'KBerliner'
     }
   }
 }
@@ -40,7 +44,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 15vh;
+  /* margin-top: 15vh; */
   height: 100%;
 }
 </style>

@@ -21,7 +21,7 @@
                 <span class="p-inputgroup-addon">
                     <i class="pi pi-key"></i>
                 </span>
-                <Password placeholder="Password" />
+                <Password placeholder="Password" v-model="password" />
         </div>
         <Button label="Submit" class="submit"/>
         <p>Already have an account? <strong class="createBtn" @click="back">  Login here</strong></p>
@@ -32,7 +32,7 @@
 export default {
     data() {
         return {
-
+            password: null
         }
     },
     methods: {
@@ -51,7 +51,7 @@ export default {
         border-radius: 8px;
         width: 85%;
         max-width: 500px;
-        margin: 0 auto;
+        margin: 15vh auto;
         border: 3px solid rgb(174, 174, 174);
         background-color: white;
     }
