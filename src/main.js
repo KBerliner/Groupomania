@@ -5,6 +5,8 @@ import PortalVue from 'portal-vue';
 import 'primeflex/primeflex.css';
 import 'primevue/resources/themes/fluent-light/theme.css';
 import 'primeicons/primeicons.css';
+import { RouterLink } from 'vue-router';
+
 import Button from "primevue/button";
 import Password from "primevue/password";
 import InputText from 'primevue/inputtext';
@@ -17,10 +19,14 @@ import Ripple from 'primevue/ripple';
 import MegaMenu from 'primevue/megamenu';
 import Menu from 'primevue/menu';
 import Toast from 'primevue/toast';
+import FileUpload from 'primevue/fileupload';
 
 createApp(App)
+
 .use(PortalVue)
 .use(PrimeVue, { ripple: true })
+
+.component('router-link', RouterLink)
 .component('Button', Button)
 .component('Password', Password)
 .component('InputText', InputText)
@@ -32,4 +38,6 @@ createApp(App)
 .component('MegaMenu', MegaMenu)
 .component('Menu', Menu)
 .component('Toast', Toast)
+.component('FileUpload', FileUpload)
+
 .mount('#app');

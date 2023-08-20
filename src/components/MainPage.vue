@@ -6,26 +6,45 @@
             <img alt="logo" src="../../Groupomania_Logos/icon-left-font-monochrome-black.svg" class="mr-2 navlogo" />
         </template>
         <template #end>
-            <Avatar :label="avatarLabel" :image="profilePicture" :class="avatarClass" size="large" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu"/>
+            <Avatar class="profilePic" :label="avatarLabel" :image="profilePicture" :class="avatarClass" size="large" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu"/>
             <Menu ref="profileMenu" :popup="true" :model="profileMenuItems"/>
             <!-- <Toast /> -->
         </template>
     </MegaMenu>
-    <div class="cardcontainer">
+    <div class="cardcontainer" v-if="this.postArray.length > 0">
         <div class="surface-card p-4 border-round flex flex-column card">
-            <div class="text-3xl font-medium text-900 mb-3">Card Title</div>
-            <div class="font-medium text-500 mb-3">Vivamus id nisl interdum, blandit augue sit amet, eleifend mi.</div>
-            <div style="height: 150px" class="border-2 border-dashed surface-border"></div>
+            <div class="text-3xl font-medium text-900 mb-3">Create A Post Here</div>
+            <div class="font-medium text-500 mb-3">Your Username Here</div>
+            <div style="height: 100px" class="border-2 border-dashed text-center cursor-pointer text-2xl font-semibold align-content-center createBtn" @click="create()">Click Here to Create a New Post!</div>
         </div>
+
+        <Post v-for="post in postArray.length" :key="postArray[post - 1]._id" :post="postArray[post - 1]" :userId="this.userId" @edit="edit"></Post>
     </div>
 </template>
 
 <script>
-
+import Post from './Post.vue'
+import CreatePost from './CreatePost.vue'
 
 export default {
+    components: {
+        Post,
+        CreatePost
+    },
     data() {
         return {
+            postArray: [
+                {
+                    _id: '12349876',
+                    title: 'This is an example Title',
+                    caption: 'Example caption here',
+                    author: 'KBerliner',
+                    authorId: '12345678',
+                    image: ''
+                }
+            ],
+            creatingPostNow: false,
+            editingPostNow: false,
             profilePicture: null,
             profileMenuItems: [
                 {
@@ -34,9 +53,17 @@ export default {
                         {
                             label: 'Edit Account',
                             icon: 'pi pi-user',
-                            // command: () => {
-                            //         this.$toast.add({ severity: 'success', summary: 'Updated', detail: 'Data Updated', life: 3000 });
-                            //     }
+
+                            command: () => {
+                                    this.$emit('editProfile', this.userId);
+                                }
+                        },
+                        {
+                            label: 'Logout',
+                            icon: 'pi pi-sign-out',
+                            command: () => {
+                                this.$emit('logout');
+                            }
                         },
                         {
                             label: 'Delete Account',
@@ -47,8 +74,15 @@ export default {
             ]
         }
     },
+    emits: [
+        'logout',
+        'create',
+        'edit',
+        'editProfile'
+],
     props: {
-        username: ''
+        username: '',
+        userId: ''
     },
     computed: {
         avatarLabel() {
@@ -68,6 +102,12 @@ export default {
     methods: {
         toggle(event) {
             this.$refs.profileMenu.toggle(event);
+        },
+        create() {
+            this.$emit('create');
+        },
+        edit(obj) {
+            this.$emit('edit', obj);
         }
     }
 }
@@ -75,14 +115,14 @@ export default {
 
 <style scoped>
 .cardcontainer {
-    margin-top: 10vh;
+    margin-top: 15vh;
 }
 
 .card {
-    box-shadow: 0px 0px 30px 0px rgba(255,255,255,1);
+    box-shadow: 0px 0px 30px -5px rgba(255,255,255,1);
     width: 90%;
     min-width: 300px;
-    margin: 0 auto;
+    margin: 0 auto 4vh auto;
 }
 
 .nav {
@@ -91,6 +131,8 @@ export default {
     left: 2.5%;
     right: 2.5%;
     top: 1%;
+    box-shadow: 0px 5px 10px -5px rgba(255,255,255,1);
+    border: none;
 }
 
 .navlogo {
@@ -103,6 +145,20 @@ export default {
     width: 95%;
 }
 
+.createBtn {
+    border-color: var(--surface-100);
+}
+
+.createBtn:hover {
+    border-color: var(--surface-400);
+    background-color: var(--surface-100);
+    transition: 0.3s;
+}
+
+.createBtn:active {
+    background-color: var(--surface-200);
+}
+
 .p-megamenu {
     border-radius: 32px;
     padding: 1rem 2rem;
@@ -110,5 +166,9 @@ export default {
 
 .p-megamenu-end {
     height: 100%;
+}
+
+.profilePic {
+    cursor: pointer;
 }
 </style>
