@@ -7,9 +7,14 @@
             <img v-if="post.image" :src="image" class="postImg"/>
             <div>{{ caption }}</div>
         </article>
+        <section v-if="likesEnabled">
+            <Button icon="pi pi-thumbs-up" :label="displayLikes" class="likesbuttons" @click="like" text raised rounded severity="success"></Button>
+            <Button icon="pi pi-thumbs-down" :label="displayDislikes" class="likesbuttons" iconPos="left" @click="dislike" text raised rounded severity="danger"></Button>
+        </section>
         <section v-if="owner">
-            <Button label="Delete" icon="pi pi-times" class="modBtn" />
             <Button label="Edit" icon="pi pi-pencil" class="modBtn" @click="edit"/>
+            <Button label="Delete" icon="pi pi-times" class="modBtn bg-red-500 border-red-500" />
+            
         </section>
     </div>
 </template>
@@ -27,7 +32,8 @@ export default {
             dislikes: this.post.dislikes,
             usersLiked: this.post.usersLiked,
             usersDisliked: this.post.usersDisliked,
-            usersSeen: this.post.usersSeen
+            usersSeen: this.post.usersSeen,
+            likesEnabled: this.post.likesEnabled
         }
     },
     emits: [
@@ -45,6 +51,12 @@ export default {
                 return null;
             }
         },
+        displayLikes() {
+            return this.likes.toString();
+        },
+        displayDislikes() {
+            return this.dislikes.toString();
+        },
         owner() {
             if (this.authorId === this.userId) {
                 return true;
@@ -61,7 +73,110 @@ export default {
                 caption: this.caption,
                 image: this.image
                 });
-        }
+        },
+        like() {
+            console.log(this._id);
+                if (!this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+                    this.likes++;
+                    this.usersLiked.push(this.userId);
+
+                    return new Promise((resolve, reject) => {
+                        let uid = this._id;
+                        let request = new XMLHttpRequest();
+                        request.open('POST', `http://localhost:3000/api/${uid}/like`);
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        request.send(JSON.stringify({
+                            like: 1,
+                            userId: this.userId
+                        }));
+                        request.onreadystatechange = () => {
+                            if (request.readyState == 4) {
+                                if (request.status === 200 || request.status === 201) {
+                                    resolve(JSON.parse(request.response));
+                                } else {
+                                    reject(JSON.parse(request.response));
+                                }
+                            }
+                        }
+                    });
+                } else if (this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+                    this.likes--;
+                    let idKeyStart = this.usersLiked.indexOf(this.userId);
+                    let idKeyEnd = idKeyStart + 1;
+                    this.usersLiked.splice(idKeyStart, idKeyEnd);
+
+                    return new Promise((resolve, reject) => {
+                        let uid = this._id;
+                        let request = new XMLHttpRequest();
+                        request.open('POST', `http://localhost:3000/api/${uid}/like`);
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        request.send(JSON.stringify({
+                            like: 0,
+                            userId: this.userId
+                        }));
+                        request.onreadystatechange = () => {
+                            if (request.readyState == 4) {
+                                if (request.status === 200 || request.status === 201) {
+                                    resolve(JSON.parse(request.response));
+                                } else {
+                                    reject(JSON.parse(request.response));
+                                }
+                            }
+                        }
+                    });
+                }
+            },
+            dislike() {
+                if (!this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+                    this.dislikes++;
+                    this.usersDisliked.push(this.userId);
+
+                    return new Promise((resolve, reject) => {
+                        let uid = this._id;
+                        let request = new XMLHttpRequest();
+                        request.open('POST', `http://localhost:3000/api/${uid}/like`);
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        request.send(JSON.stringify({
+                            like: -1,
+                            userId: this.userId
+                        }));
+                        request.onreadystatechange = () => {
+                            if (request.readyState == 4) {
+                                if (request.status === 200 || request.status === 201) {
+                                    resolve(JSON.parse(request.response));
+                                } else {
+                                    reject(JSON.parse(request.response));
+                                }
+                            }
+                        }
+                    });
+                } else if (!this.post.usersLiked.includes(this.userId) && this.post.usersDisliked.includes(this.userId)) {
+                    this.dislikes--;
+                    let idKeyStart = this.usersDisliked.indexOf(this.userId);
+                    let idKeyEnd = idKeyStart + 1;
+                    this.usersDisliked.splice(idKeyStart, idKeyEnd);
+
+                    return new Promise((resolve, reject) => {
+                        let request = new XMLHttpRequest();
+                        let uid = this._id;
+                        request.open('POST', `http://localhost:3000/api/${uid}/like`);
+                        request.setRequestHeader('Content-Type', 'application/json');
+                        request.send(JSON.stringify({
+                            like: 0,
+                            userId: this.userId
+                        }));
+                        request.onreadystatechange = () => {
+                            if (request.readyState == 4) {
+                                if (request.status === 200 || request.status === 201) {
+                                    resolve(JSON.parse(request.response));
+                                } else {
+                                    reject(JSON.parse(request.response));
+                                }
+                            }
+                        }
+                    });
+                }
+            }
     }
 }
 </script>
@@ -81,9 +196,14 @@ export default {
 .postImg {
     width: 20%;
     min-width: 100px;
+    padding-right: 2rem;
 }
 
 .modBtn {
     margin: 4% 2% 0;
+}
+
+.likesbuttons {
+    margin: 2em;
 }
 </style>

@@ -11,7 +11,7 @@
             <!-- <Toast /> -->
         </template>
     </MegaMenu>
-    <div class="cardcontainer" v-if="this.postArray.length > 0">
+    <div class="cardcontainer">
         <div class="surface-card p-4 border-round flex flex-column card">
             <div class="text-3xl font-medium text-900 mb-3">Create A Post Here</div>
             <div class="font-medium text-500 mb-3">Your Username Here</div>
@@ -34,14 +34,14 @@ export default {
     data() {
         return {
             postArray: [
-                {
-                    _id: '12349876',
-                    title: 'This is an example Title',
-                    caption: 'Example caption here',
-                    author: 'KBerliner',
-                    authorId: '12345678',
-                    image: ''
-                }
+            //     // {
+            //     //     _id: '12349876',
+            //     //     title: 'This is an example Title',
+            //     //     caption: 'Example caption here',
+            //     //     author: 'KBerliner',
+            //     //     authorId: '12345678',
+            //     //     image: ''
+            //     // }
             ],
             creatingPostNow: false,
             editingPostNow: false,
@@ -82,7 +82,8 @@ export default {
 ],
     props: {
         username: '',
-        userId: ''
+        userId: '',
+        newPost: false
     },
     computed: {
         avatarLabel() {
@@ -99,6 +100,11 @@ export default {
         return this.profilePicture ? 'p-avatar-image' : '';
         }
     },
+    watch: {
+        newPost : function(post) {
+            postArray.push(post);
+        }
+    },
     methods: {
         toggle(event) {
             this.$refs.profileMenu.toggle(event);
@@ -109,6 +115,25 @@ export default {
         edit(obj) {
             this.$emit('edit', obj);
         }
+    },
+    created: function() {
+        let key = localStorage.getItem('validToken');
+            return new Promise((resolve, reject) => {
+                let request = new XMLHttpRequest();
+                request.open('GET', 'http://localhost:3000/api/');
+                request.setRequestHeader('Authorization', 'Bearer ' + key);
+                request.send();
+                request.onreadystatechange = () => {
+                    if (request.readyState == 4) {
+                        if (request.status === 200 || request.status === 201) {
+                            this.postArray = (JSON.parse(request.response));
+                            resolve(JSON.parse(request.response));
+                        } else {
+                            reject(JSON.parse(request.response));
+                        }
+                    }
+                }
+            });
     }
 }
 </script>
@@ -133,6 +158,7 @@ export default {
     top: 1%;
     box-shadow: 0px 5px 10px -5px rgba(255,255,255,1);
     border: none;
+    z-index: 10;
 }
 
 .navlogo {

@@ -8,8 +8,8 @@ const uniqueValidator = require('mongoose-unique-validator');
 const postSchema = mongoose.Schema({
     title: {
         type: String,
-        default: ''
-        // required: true
+        default: '',
+        required: true
         },
     author: {
         type: String,
@@ -21,8 +21,8 @@ const postSchema = mongoose.Schema({
     },
     caption: {
         type: String,
-        default: ''
-        // required: true
+        default: '',
+        required: true
     },
     likes: {
         type: Number
@@ -39,7 +39,11 @@ const postSchema = mongoose.Schema({
     usersSeen: {
         type: Array
     },
-    image: {}
+    image: {},
+    likesEnabled: {
+        type: Boolean,
+        default: true
+    }
 });
 
 postSchema.plugin(uniqueValidator);

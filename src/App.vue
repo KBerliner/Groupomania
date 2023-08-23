@@ -3,14 +3,15 @@
   <Signup v-if="!loggedIn && !remember && signup" @back="this.signup = false"></Signup>
   <MainPage 
   v-if="loggedIn && !signup && !creatingPostNow && !editingPostNow && !editingProfile" 
-  @logout="this.loggedIn = false"
+  :newPost="newPost"
+  @logout="logout"
   :username="this.username"
   :userId="this.userId"
   @create="this.creatingPostNow = true;"
   @edit="edit"
   @editProfile="profile"
   ></MainPage>
-  <CreatePost v-if="creatingPostNow" @back="creatingPostNow = false"></CreatePost>
+  <CreatePost v-if="creatingPostNow" @back="creatingPostNow = false" @createdPost="creatingPostNow = false; this.newPost = true" :author="username" :authorId="userId"></CreatePost>
   <EditPost v-if="editingPostNow" :post="editingThisPost" @back="editingPostNow = false; editingThisPost = {}"></EditPost>
   <Profile v-if="editingProfile" :username="username" @back="editingProfile = false;"></Profile>
 </template>
@@ -35,15 +36,16 @@ export default {
   },
   data() {
     return {
-      loggedIn: true,
+      loggedIn: false,
       signup: false,
-      remember: false,
-      userId: '12345678',
-      username: 'Julianne',
+      remember: true,
+      userId: '',
+      username: '',
       creatingPostNow: false,
       editingPostNow: false,
       editingThisPost: {},
-      editingProfile: false
+      editingProfile: false,
+      newPost: false
     }
   },
   methods: {
@@ -53,6 +55,52 @@ export default {
     },
     profile() {
       this.editingProfile = true;
+    },
+    login(uid, username, token) {
+      this.loggedIn = true;
+      this.userId = uid;
+      this.username = username;
+      if (token)  {
+        this.remember = true;
+          if (localStorage) {
+          // console.log(localStorage);
+          localStorage.setItem('validToken', token);
+        }
+      }
+    },
+    logout() {
+      this.loggedIn = false;
+      this.username = '';
+      this.userId = '';
+      this.remember = false;
+      localStorage.removeItem('validToken');
+    }
+  },
+  created() {
+
+    // This is to implement "User Persistence"
+
+    if (localStorage) {
+        if (localStorage.getItem('validToken')  && localStorage.getItem('validToken') !== undefined) {
+            let key = JSON.stringify({ key: localStorage.getItem('validToken') });
+            return new Promise((resolve, reject) => {
+                let request = new XMLHttpRequest();
+                request.open('POST', 'http://localhost:3000/api/persist');
+                request.setRequestHeader('Content-Type', 'application/json');
+                request.send(key);
+                request.onreadystatechange = () => {
+                    if (request.readyState == 4) {
+                        if (request.status === 200 || request.status === 201) {
+                            // this.$emit('login', JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
+                            this.login(JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
+                            resolve(JSON.parse(request.response));
+                        }
+                    }
+                }
+            });
+        } else {
+          this.remember = false;
+        }
     }
   }
 }

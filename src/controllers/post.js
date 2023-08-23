@@ -82,14 +82,15 @@ exports.createPost = (req, res, next) => {
     if (req.file) {
         const post = new Post({
             title: postBody.title,
-            username: postBody.username,
+            author: postBody.author,
             caption: postBody.caption,
             authorId: postBody.authorId,
             image: url + '/' + req.file.path,
             likes: 0,
             dislikes: 0,
             usersLiked: [],
-            usersDisliked: []
+            usersDisliked: [],
+            likesEnabled: postBody.likesEnabled
         });
         post.save().then(
             () => {
@@ -107,13 +108,14 @@ exports.createPost = (req, res, next) => {
     } else {
         const post = new Post({
             title: postBody.title,
-            username: postBody.username,
+            author: postBody.author,
             caption: postBody.caption,
             authorId: postBody.authorId,
             likes: 0,
             dislikes: 0,
             usersLiked: [],
-            usersDisliked: []
+            usersDisliked: [],
+            likesEnabled: postBody.likesEnabled
         });
         post.save().then(
             () => {
@@ -159,7 +161,7 @@ exports.updatePost = (req, res, next) => {
         const url = req.protocol + '://' + req.get('host');
         post = {
             title: postBody.title,
-            username: postBody.username,
+            author: postBody.author,
             caption: postBody.caption,
             image: url + '/' + req.file.path,
         };

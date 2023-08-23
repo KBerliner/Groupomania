@@ -6,18 +6,19 @@
         </div>
 
         <div class="p-inputgroup flex-1 input">
-                <InputText placeholder="Title" />
+                <InputText placeholder="Title" v-model="title" />
         </div>
         <div class="p-inputgroup flex-2 input">
                 <textarea v-model="caption" placeholder="Caption" rows="5" cols="50" class="w-full line-height-2 captionInput"/>
         </div>
-        <!-- <div class="card flex justify-content-left align-items-center" >
-            <h3 class="mr-2">Remember Me?</h3>
-            <Checkbox v-model="remember" :binary="true" />
-        </div> -->
-        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" style="margin: 2vh auto" chooseLabel="Choose Image"></FileUpload>
 
-        <Button label="Submit" class="submit"/>
+        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" style="margin: 2vh auto" chooseLabel="Choose Image" @input="handleFileUpload"></FileUpload>
+        <div class="card flex justify-content-left align-items-center" >
+            <h3 class="mr-2">Enable Likes?</h3>
+            <Checkbox v-model="likesEnabled" :binary="true" />
+        </div>
+
+        <Button label="Submit" class="submit" @click="submitPost" />
         <p class="back" @click="$emit('back')">Go Back</p>
     </div>
 </template>
@@ -28,7 +29,8 @@ export default {
         return {
             title: '',
             caption: '',
-            image: ''
+            image: '',
+            likesEnabled: true
         }
     },
     props: {
@@ -36,8 +38,50 @@ export default {
         authorId: ''
     },
     emits: [
-        'back'
-    ]
+        'back',
+        'createdPost'
+    ],
+    methods: {
+        handleFileUpload($event) {
+                this.image = $event.target.files[0];
+        },
+        submitPost($event) {
+                $event.preventDefault();
+                const formData = new FormData();
+
+                let post = JSON.stringify({
+                    title: this.title,
+                    author: this.author,
+                    caption: this.caption,
+                    authorId: this.authorId,
+                    likesEnabled: this.likesEnabled
+                });
+
+                formData.append("post", post);
+                if (this.image) {
+                    formData.append("image", this.image); 
+                }
+
+                return new Promise((resolve, reject) => {
+                    let key = 'eyJhbGciOiJIUzI1NiJ9.e30.QXKHqZhQAO4ZOTEDRNAxc4CD1jblcF_BakFSjA3srJc';
+                    let request = new XMLHttpRequest();
+                    request.open('POST', 'http://localhost:3000/api/');
+                    request.setRequestHeader('Authorization', 'Bearer ' + key);
+                    // request.setRequestHeader('Content-Type', 'multipart/form-data');
+                    request.send(formData);
+                    request.onreadystatechange = () => {
+                        if (request.readyState == 4) {
+                            if (request.status === 200 || request.status === 201) {
+                                resolve(JSON.parse(request.response));
+                                this.$emit('createdPost');
+                            } else {
+                                reject(JSON.parse(request.response));
+                            }
+                        }
+                    }
+                })
+            }
+    }
 }
 </script>
 
