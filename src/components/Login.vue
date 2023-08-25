@@ -53,7 +53,7 @@ export default {
         },
         login($event) {
             $event.preventDefault();
-            let user = JSON.stringify({ email: this.email, password: this.password });
+            let user = JSON.stringify({ email: this.email, password: this.password, remember: this.remember });
             return new Promise((resolve, reject) => {
                 let request = new XMLHttpRequest();
                 request.open('POST', 'http://localhost:3000/api/login');
@@ -62,14 +62,8 @@ export default {
                 request.onreadystatechange = () => {
                     if (request.readyState == 4) {
                         if (request.status === 200 || request.status === 201) {
-                            if (this.remember) {
-                                this.$emit('login', JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
-                                resolve(JSON.parse(request.response));
-                            } else {
-                                this.$emit('login', JSON.parse(request.response).userId, JSON.parse(request.response).username);
-                                resolve(JSON.parse(request.response));
-                            }
-                            
+                            this.$emit('login', JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token, this.remember);
+                            resolve(JSON.parse(request.response));
                         }
                     }
                 }

@@ -200,10 +200,10 @@ export default {
 }
 
 .modBtn {
-    margin: 4% 2% 0;
+    margin: 3% 2% 0 0;
 }
 
 .likesbuttons {
-    margin: 2em;
+    margin: 2em 1em 0 0;
 }
 </style>

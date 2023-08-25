@@ -91,9 +91,11 @@ export default {
                 request.onreadystatechange = () => {
                     if (request.readyState == 4) {
                         if (request.status === 200 || request.status === 201) {
-                            // this.$emit('login', JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
                             this.login(JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
                             resolve(JSON.parse(request.response));
+                        } else {
+                          console.log('not persisting');
+                          this.logout();
                         }
                     }
                 }

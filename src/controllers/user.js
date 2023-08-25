@@ -47,18 +47,21 @@ exports.login = (req, res, next) => {
                     error: new Error('Incorrect password!')
                   });
                 }
-                const token = jwt.sign(
+                let token;
+                if (req.body.remember) {
+                  token = jwt.sign(
                     { userId: user._id },
                     'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
-                    { expiresIn: '24h' }
-                );
-                // user = {
-                //   username: user.username,
-                //   email: user.email,
-                //   password: user.password,
-                //   token: token
-                // }
-                // user.save();
+                    { expiresIn: '30d' }
+                  );
+                } else if (!req.body.remember) {
+                  token = jwt.sign(
+                    { userId: user._id },
+                    'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
+                    { expiresIn: '2h' }
+                  );
+                }
+
                 res.status(200).json({
                     userId: user._id,
                     token: token,
