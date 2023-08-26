@@ -205,7 +205,7 @@ exports.updatePost = (req, res, next) => {
 // The "Delete" Function
 
 exports.deletePost = (req, res, next) => {
-    
+    console.log('Deleting...');
     Post.findOne({ _id: req.params.id }).then(
         (post) => {
             if (!post) {
@@ -222,8 +222,24 @@ exports.deletePost = (req, res, next) => {
     )
     Post.findOne({ _id: req.params.id }).then(
         (post) => {
-            const filename = post.image.split('/images/')[1];
-            fs.unlink('images/' + filename, () => {
+            if (post.image) {
+                const filename = post.image.split('/images/')[1];
+                fs.unlink('images/' + filename, () => {
+                    Post.deleteOne({ _id: req.params.id }).then(
+                        () => {
+                            res.status(200).json({
+                                message: 'Deleted!'
+                            });
+                        }
+                    ).catch(
+                        (error) => {
+                            res.status(400).json({
+                                error: error
+                            });
+                        }
+                    );
+                });
+            } else {
                 Post.deleteOne({ _id: req.params.id }).then(
                     () => {
                         res.status(200).json({
@@ -237,7 +253,7 @@ exports.deletePost = (req, res, next) => {
                         });
                     }
                 );
-            });
+            }
         }
     );
 }

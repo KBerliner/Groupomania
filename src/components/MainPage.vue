@@ -6,19 +6,19 @@
             <img alt="logo" src="../../Groupomania_Logos/icon-left-font-monochrome-black.svg" class="mr-2 navlogo" />
         </template>
         <template #end>
-            <Avatar class="profilePic" :label="avatarLabel" :image="profilePicture" :class="avatarClass" size="large" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu"/>
+            <Avatar class="profilePic p-overlay-badge" v-badge="unseenPosts" :label="avatarLabel" :image="profilePicture" :class="avatarClass" size="large" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu" id="avatar"/>
             <Menu ref="profileMenu" :popup="true" :model="profileMenuItems"/>
             <!-- <Toast /> -->
         </template>
     </MegaMenu>
-    <div class="cardcontainer">
+    <div class="cardcontainer flex flex-column-reverse">
+        <Post v-for="post in postArray.length" :key="postArray[post - 1]._id" :post="postArray[post - 1]" :userId="this.userId" @edit="edit" @deletePost="deletePost" @unseen="this.unseenPosts++" @seen="seePost"></Post>
+    
         <div class="surface-card p-4 border-round flex flex-column card">
             <div class="text-3xl font-medium text-900 mb-3">Create A Post Here</div>
             <div class="font-medium text-500 mb-3">Your Username Here</div>
             <div style="height: 100px" class="border-2 border-dashed text-center cursor-pointer text-2xl font-semibold align-content-center createBtn" @click="create()">Click Here to Create a New Post!</div>
         </div>
-
-        <Post v-for="post in postArray.length" :key="postArray[post - 1]._id" :post="postArray[post - 1]" :userId="this.userId" @edit="edit"></Post>
     </div>
 </template>
 
@@ -33,16 +33,7 @@ export default {
     },
     data() {
         return {
-            postArray: [
-            //     // {
-            //     //     _id: '12349876',
-            //     //     title: 'This is an example Title',
-            //     //     caption: 'Example caption here',
-            //     //     author: 'KBerliner',
-            //     //     authorId: '12345678',
-            //     //     image: ''
-            //     // }
-            ],
+            postArray: [],
             creatingPostNow: false,
             editingPostNow: false,
             profilePicture: null,
@@ -71,7 +62,8 @@ export default {
                         }
                     ]
                 }
-            ]
+            ],
+            unseenPosts: 0
         }
     },
     emits: [
@@ -114,6 +106,23 @@ export default {
         },
         edit(obj) {
             this.$emit('edit', obj);
+        },
+        seePost() {
+            this.unseenPosts--;
+        },
+        deletePost(uid) {
+            console.log('Test Delete: ', this.postArray);
+            const index = this.postArray.findIndex(item => {
+                return item._id === uid;
+            });
+            if (index !== -1) {
+                let idKeyStart = index;
+                let idKeyEnd = idKeyStart + 1;
+                console.log('Index found:', idKeyStart);
+                this.postArray.splice(idKeyStart, idKeyEnd);
+            } else {
+                console.log('Index not found.');
+            }
         }
     },
     created: function() {
@@ -197,4 +206,8 @@ export default {
 .profilePic {
     cursor: pointer;
 }
+
+/* .disappear {
+    display: none;
+} */
 </style>

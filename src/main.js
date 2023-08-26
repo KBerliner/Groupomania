@@ -6,6 +6,8 @@ import 'primeflex/primeflex.css';
 import 'primevue/resources/themes/fluent-light/theme.css';
 import 'primeicons/primeicons.css';
 import { RouterLink } from 'vue-router';
+import BadgeDirective from 'primevue/badgedirective';
+import ConfirmationService from 'primevue/confirmationservice';
 
 import Button from "primevue/button";
 import Password from "primevue/password";
@@ -20,11 +22,15 @@ import MegaMenu from 'primevue/megamenu';
 import Menu from 'primevue/menu';
 import Toast from 'primevue/toast';
 import FileUpload from 'primevue/fileupload';
+import Tag from 'primevue/tag';
+import Badge from 'primevue/badge';
+import ConfirmPopup from 'primevue/confirmpopup';
 
 createApp(App)
 
 .use(PortalVue)
 .use(PrimeVue, { ripple: true })
+.use(ConfirmationService)
 
 .component('router-link', RouterLink)
 .component('Button', Button)
@@ -39,5 +45,10 @@ createApp(App)
 .component('Menu', Menu)
 .component('Toast', Toast)
 .component('FileUpload', FileUpload)
+.component('Tag', Tag)
+.component('Badge', Badge)
+.component('ConfirmPopup', ConfirmPopup)
+
+.directive('badge', BadgeDirective)
 
 .mount('#app');
