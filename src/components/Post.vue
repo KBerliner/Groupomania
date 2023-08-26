@@ -73,7 +73,6 @@ export default {
                 if (this.post.usersSeen.includes(this.userId)) {
                     return true;
                 } else {
-                    this.$emit('unseen');
                     return false;
                 }
             }
@@ -249,6 +248,13 @@ export default {
                 }
             });
         },
+    },
+    created() {
+        if (this.post.usersSeen && this.post.usersSeen != undefined) {
+            if (!this.post.usersSeen.includes(this.userId)) {
+                this.$emit('unseen');
+            }
+        }
     }
 }
 </script>

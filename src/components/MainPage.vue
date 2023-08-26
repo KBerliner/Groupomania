@@ -1,5 +1,6 @@
 <template>
     <ScrollTop />
+    <ConfirmPopup></ConfirmPopup>
 
     <MegaMenu orientation="horizontal" class="nav mx-auto">
         <template #start>
@@ -44,7 +45,6 @@ export default {
                         {
                             label: 'Edit Account',
                             icon: 'pi pi-user',
-
                             command: () => {
                                     this.$emit('editProfile', this.userId);
                                 }
@@ -58,7 +58,18 @@ export default {
                         },
                         {
                             label: 'Delete Account',
-                            icon: 'pi pi-times'
+                            icon: 'pi pi-times',
+                            command: () => {
+                                this.$confirm.require({
+                                    target: event.currentTarget,
+                                    message: 'Do you want to delete your account?',
+                                    icon: 'pi pi-info-circle',
+                                    acceptClass: 'p-button-danger',
+                                    accept: () => {
+                                        this.deleteAccount();
+                                    }
+                                });
+                            }
                         }
                     ]
                 }
@@ -123,6 +134,27 @@ export default {
             } else {
                 console.log('Index not found.');
             }
+        },
+        deleteAccount() {
+            return new Promise((resolve, reject) => {
+                let key = localStorage.getItem('validToken');
+                let uid = this.userId;
+                let request = new XMLHttpRequest();
+                request.open('DELETE', `http://localhost:3000/api/${uid}/delete`);
+                request.setRequestHeader('Content-Type', 'application/json');
+                request.setRequestHeader('Authorization', 'Bearer ' + key);
+                request.send();
+                request.onreadystatechange = () => {
+                    if (request.readyState == 4) {
+                        if (request.status === 200 || request.status === 201) {
+                            this.$emit('logout');
+                            resolve(JSON.parse(request.response));
+                        } else {
+                            reject(JSON.parse(request.response));
+                        }
+                    }
+                }
+            }) 
         }
     },
     created: function() {
@@ -207,7 +239,7 @@ export default {
     cursor: pointer;
 }
 
-/* .disappear {
-    display: none;
-} */
+.pi-times::before {
+    color: var(--red-500);
+}
 </style>

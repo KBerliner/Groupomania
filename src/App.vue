@@ -1,6 +1,6 @@
 <template>
   <Login v-if="!loggedIn && !remember && !signup" @signup="this.signup = true" @login="login"></Login>
-  <Signup v-if="!loggedIn && !remember && signup" @back="this.signup = false"></Signup>
+  <Signup v-if="!loggedIn && !remember && signup" @back="this.signup = false" @login="login"></Signup>
   <MainPage 
   v-if="loggedIn && !signup && !creatingPostNow && !editingPostNow && !editingProfile" 
   :newPost="newPost"
@@ -67,6 +67,7 @@ export default {
           localStorage.setItem('validToken', token);
         }
       }
+      this.signup = false;
     },
     logout() {
       this.loggedIn = false;
