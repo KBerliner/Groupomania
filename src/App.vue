@@ -12,7 +12,7 @@
   @editProfile="profile"
   ></MainPage>
   <CreatePost v-if="creatingPostNow" @back="creatingPostNow = false" @createdPost="creatingPostNow = false; this.newPost = true" :author="username" :authorId="userId"></CreatePost>
-  <EditPost v-if="editingPostNow" :post="editingThisPost" @back="editingPostNow = false; editingThisPost = {}"></EditPost>
+  <EditPost v-if="editingPostNow" :post="editingThisPost" @back="editingPostNow = false; editingThisPost = {}" @editedPost="this.updatedPost = true; editingPostNow = false; editingThisPost = {}"></EditPost>
   <Profile v-if="editingProfile" :username="username" @back="editingProfile = false;"></Profile>
 </template>
 
@@ -45,7 +45,8 @@ export default {
       editingPostNow: false,
       editingThisPost: {},
       editingProfile: false,
-      newPost: false
+      newPost: false,
+      updatedPost: false
     }
   },
   methods: {
@@ -63,7 +64,6 @@ export default {
       if (token)  {
         this.remember = true;
           if (localStorage) {
-          // console.log(localStorage);
           localStorage.setItem('validToken', token);
         }
       }

@@ -12,9 +12,9 @@
                 <textarea v-model="post.caption" placeholder="Caption" rows="5" cols="50" class="w-full line-height-2 captionInput"/>
         </div>
 
-        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" style="margin: 2vh auto" chooseLabel="Choose Image"></FileUpload>
+        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" style="margin: 2vh auto" chooseLabel="Choose Image" @input="handleImageUpload"></FileUpload>
 
-        <Button label="Submit" class="submit"/>
+        <Button label="Submit" class="submit" @click="submitPost"/>
         <p class="back" @click="$emit('back')">Go Back</p>
     </div>
 </template>
@@ -30,8 +30,50 @@ export default {
         }
     },
     emits: [
-        'back'
-    ]
+        'back',
+        'editedPost'
+    ],
+    methods: {
+        handleImageUpload($event) {
+            this.image = $event.target.files[0];
+        },
+        submitPost($event) {
+            $event.preventDefault();
+
+            console.log(this);
+            const formData = new FormData();
+
+            let post = JSON.stringify({
+                title: this.post.title,
+                caption: this.post.caption,
+                _id: this.post._id
+            });
+
+            formData.append("post", post);
+            if (this.image) {
+                formData.append("image", this.image);
+            }
+
+            return new Promise((resolve, reject) => {
+                let key = localStorage.getItem('validToken');
+                let uid = this.post._id;
+                let request = new XMLHttpRequest();
+                request.open('PUT', `http://localhost:3000/api/${uid}`);
+                request.setRequestHeader('Authorization', 'Bearer ' + key);
+                request.send(formData);
+                request.onreadystatechange = () => {
+                    if (request.readyState == 4) {
+                        if (request.status === 200 || request.status === 201) {
+                            this.$emit('editedPost');
+                            resolve(JSON.parse(request.response));
+                        } else {
+                            reject(JSON.parse(request.response));
+                        }
+                    }
+                }
+            })
+        }
+    }
 }
 </script>
 

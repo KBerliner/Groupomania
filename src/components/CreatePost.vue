@@ -6,10 +6,10 @@
         </div>
 
         <div class="p-inputgroup flex-1 input">
-                <InputText placeholder="Title" v-model="title" />
+                <InputText placeholder="Title" v-model="title" @input="validate" />
         </div>
         <div class="p-inputgroup flex-2 input">
-                <textarea v-model="caption" placeholder="Caption" rows="5" cols="50" class="w-full line-height-2 captionInput"/>
+                <textarea v-model="caption" placeholder="Caption" rows="5" cols="50" class="w-full line-height-2 captionInput" @input="validate"/>
         </div>
 
         <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" style="margin: 2vh auto" chooseLabel="Choose Image" @input="handleFileUpload"></FileUpload>
@@ -18,7 +18,7 @@
             <Checkbox v-model="likesEnabled" :binary="true" />
         </div>
 
-        <Button label="Submit" class="submit" @click="submitPost" />
+        <Button label="Submit" class="submit p-disabled" @click="submitPost" id="submit"/>
         <p class="back" @click="$emit('back')">Go Back</p>
     </div>
 </template>
@@ -80,7 +80,16 @@ export default {
                         }
                     }
                 })
+        },
+        validate() {
+            if (this.title && this.caption) {
+                document.getElementById('submit').classList.remove('p-disabled');
+                console.log('Testing', this.title, this.caption, document.getElementById('submit'));
+            } else {
+                document.getElementById('submit').classList.add('pdisabled');
+                console.log('testing', this.title, this.caption, document.getElementById('submit'))
             }
+        }
     }
 }
 </script>
