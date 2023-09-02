@@ -9,8 +9,7 @@
                 <InputText placeholder="username" v-model="user" />
         </div>
 
-        <Button label="Submit" class="submit"/>
-        <Button label="Delete" class="delete" severity="danger"/>
+        <Button label="Submit" class="submit" @click="submit"/>
         <p class="back" @click="$emit('back')">Go Back</p>
     </div>
 </template>
@@ -19,15 +18,39 @@
 export default {
     data() {
         return {
-            user: this.username
+            user: this.username,
+            id: this.id
         }
     },
     props: {
-        username: ''
+        username: '',
+        userId: ''
     },
     emits: [
         'back'
-    ]
+    ],
+    methods: {
+        submit($event) {
+            $event.preventDefault();
+            console.log('submitting...');
+            return new Promise((resolve, reject) => {
+                    let key = 'eyJhbGciOiJIUzI1NiJ9.e30.QXKHqZhQAO4ZOTEDRNAxc4CD1jblcF_BakFSjA3srJc';
+                    let request = new XMLHttpRequest();
+                    request.open('PUT', `http://localhost:3000/api/${this.id}/edit`);
+                    request.setRequestHeader('Authorization', 'Bearer ' + key);
+                    request.onreadystatechange = () => {
+                        if (request.readyState == 4) {
+                            if (request.status === 200 || request.status === 201) {
+                                resolve(JSON.parse(request.response));
+                                this.$emit('back');
+                            } else {
+                                reject(JSON.parse(request.response));
+                            }
+                        }
+                    }
+                })
+        }
+    }
 }
 </script>
 

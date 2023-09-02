@@ -8,7 +8,7 @@
             <img v-if="post.image" :src="image" class="postImg"/>
             <div>{{ caption }}</div>
         </article>
-        <section v-if="likesEnabled">
+        <section v-if="likesenabled">
             <Button icon="pi pi-thumbs-up" :label="displayLikes" class="likesbuttons" @click="like" text raised rounded severity="success"></Button>
             <Button icon="pi pi-thumbs-down" :label="displayDislikes" class="likesbuttons" iconPos="left" @click="dislike" text raised rounded severity="danger"></Button>
         </section>
@@ -24,17 +24,17 @@
 export default {
     data() {
         return {
-            _id: this.post._id,
+            id: this.post.id,
             title: this.post.title,
             caption: this.post.caption,
             author: this.post.author,
-            authorId: this.post.authorId,
+            authorid: this.post.authorid,
             likes: this.post.likes,
             dislikes: this.post.dislikes,
-            usersLiked: this.post.usersLiked,
-            usersDisliked: this.post.usersDisliked,
-            usersSeen: this.post.usersSeen,
-            likesEnabled: this.post.likesEnabled
+            usersliked: this.post.usersliked,
+            usersdisliked: this.post.usersdisliked,
+            usersseen: this.post.usersseen,
+            likesenabled: this.post.likesenabled
         }
     },
     emits: [
@@ -62,15 +62,15 @@ export default {
             return this.dislikes.toString();
         },
         owner() {
-            if (this.authorId === this.userId) {
+            if (this.authorid === this.userId) {
                 return true;
             } else {
                 return false;
             }
         },
         seen() {
-            if (this.post.usersSeen && this.post.usersSeen != undefined) {
-                if (this.post.usersSeen.includes(this.userId)) {
+            if (this.post.usersseen && this.post.usersseen != undefined) {
+                if (this.post.usersseen.includes(this.userId)) {
                     return true;
                 } else {
                     return false;
@@ -81,20 +81,20 @@ export default {
     methods: {
         edit() {
             this.$emit('edit', {
-                _id : this._id,
+                id : this.id,
                 title: this.title,
                 caption: this.caption,
                 image: this.image
-                });
+            });
         },
         like() {
-            console.log(this._id);
-                if (!this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+            console.log(this.id);
+                if (!this.post.usersliked.includes(this.userId) && !this.post.usersdisliked.includes(this.userId)) {
                     this.likes++;
-                    this.usersLiked.push(this.userId);
+                    this.usersliked.push(this.userId);
 
                     return new Promise((resolve, reject) => {
-                        let uid = this._id;
+                        let uid = this.id;
                         let request = new XMLHttpRequest();
                         request.open('POST', `http://localhost:3000/api/${uid}/like`);
                         request.setRequestHeader('Content-Type', 'application/json');
@@ -112,14 +112,14 @@ export default {
                             }
                         }
                     });
-                } else if (this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+                } else if (this.post.usersliked.includes(this.userId) && !this.post.usersdisliked.includes(this.userId)) {
                     this.likes--;
-                    let idKeyStart = this.usersLiked.indexOf(this.userId);
+                    let idKeyStart = this.usersliked.indexOf(this.userId);
                     let idKeyEnd = idKeyStart + 1;
-                    this.usersLiked.splice(idKeyStart, idKeyEnd);
+                    this.usersliked.splice(idKeyStart, idKeyEnd);
 
                     return new Promise((resolve, reject) => {
-                        let uid = this._id;
+                        let uid = this.id;
                         let request = new XMLHttpRequest();
                         request.open('POST', `http://localhost:3000/api/${uid}/like`);
                         request.setRequestHeader('Content-Type', 'application/json');
@@ -140,12 +140,12 @@ export default {
                 }
         },
         dislike() {
-                if (!this.post.usersLiked.includes(this.userId) && !this.post.usersDisliked.includes(this.userId)) {
+                if (!this.post.usersliked.includes(this.userId) && !this.post.usersdisliked.includes(this.userId)) {
                     this.dislikes++;
-                    this.usersDisliked.push(this.userId);
+                    this.usersdisliked.push(this.userId);
 
                     return new Promise((resolve, reject) => {
-                        let uid = this._id;
+                        let uid = this.id;
                         let request = new XMLHttpRequest();
                         request.open('POST', `http://localhost:3000/api/${uid}/like`);
                         request.setRequestHeader('Content-Type', 'application/json');
@@ -163,15 +163,15 @@ export default {
                             }
                         }
                     });
-                } else if (!this.post.usersLiked.includes(this.userId) && this.post.usersDisliked.includes(this.userId)) {
+                } else if (!this.post.usersliked.includes(this.userId) && this.post.usersdisliked.includes(this.userId)) {
                     this.dislikes--;
-                    let idKeyStart = this.usersDisliked.indexOf(this.userId);
+                    let idKeyStart = this.usersdisliked.indexOf(this.userId);
                     let idKeyEnd = idKeyStart + 1;
-                    this.usersDisliked.splice(idKeyStart, idKeyEnd);
+                    this.usersdisliked.splice(idKeyStart, idKeyEnd);
 
                     return new Promise((resolve, reject) => {
                         let request = new XMLHttpRequest();
-                        let uid = this._id;
+                        let uid = this.id;
                         request.open('POST', `http://localhost:3000/api/${uid}/like`);
                         request.setRequestHeader('Content-Type', 'application/json');
                         request.send(JSON.stringify({
@@ -191,16 +191,17 @@ export default {
                 }
         },
         seeing() {
-                if (this.post.usersSeen) {
-                    if (!this.post.usersSeen.includes(this.userId)) {
-                        this.post.usersSeen.push(this.userId);
+                if (this.post.usersseen) {
+                    if (!this.post.usersseen.includes(this.userId)) {
+                        this.post.usersseen.push(this.userId);
                         return new Promise((resolve, reject) => {
                             let request = new XMLHttpRequest();
-                            let uid = this._id;
+                            let uid = this.id;
                             request.open('POST', `http://localhost:3000/api/${uid}/see`);
                             request.setRequestHeader('Content-Type', 'application/json');
                             request.send(JSON.stringify({
-                                userId: this.userId
+                                userId: this.userId,
+                                usersSeen: this.usersseen
                             }));
                             request.onreadystatechange = () => {
                                 if (request.readyState == 4) {
@@ -219,7 +220,7 @@ export default {
         delete() {
             return new Promise((resolve, reject) => {
                 let key = localStorage.getItem('validToken');
-                let uid = this._id;
+                let uid = this.id;
                 let request = new XMLHttpRequest();
                 request.open('DELETE', `http://localhost:3000/api/${uid}`);
                 request.setRequestHeader('Content-Type', 'application/json');
@@ -250,8 +251,8 @@ export default {
         },
     },
     created() {
-        if (this.post.usersSeen && this.post.usersSeen != undefined) {
-            if (!this.post.usersSeen.includes(this.userId)) {
+        if (this.post.usersseen && this.post.usersseen != undefined) {
+            if (!this.post.usersseen.includes(this.userId)) {
                 this.$emit('unseen');
             }
         }

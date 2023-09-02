@@ -3,52 +3,71 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Post = require('../models/post');
 const fs = require('fs/promises');
+const db = require('../db');
 
 // The "Signup" Function
 
 exports.signup = (req, res, next) => {
-    bcrypt.hash(req.body.password, 10).then(
-        (hash) => {
-            const user = new User({
-                username: req.body.username,
-                email: req.body.email,
-                password: hash
-            });
-            let token = jwt.sign(
-              { userId: user._id },
-              'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
-              { expiresIn: '2h' }
-            );
-            user.save().then(
-                () => {
-                    res.status(201).json({
-                        message: 'User added successfully!',
-                        username: req.body.username,
-                        userId: user._id,
-                        token: token
-                    });
-                }
-            ).catch(
-                (error) => {
-                    res.status(500).json({
-                        error: error
-                    });
-                }
-            );
+  bcrypt.hash(req.body.password, 10).then(
+    (hash) => {
+      const user = new User({
+        username: req.body.username,
+        email: req.body.email,
+        password: hash
+      });
+      let token = jwt.sign(
+        { userId: user.id },
+        'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
+        { expiresIn: '2h' }
+      );
+
+      // Use parameterized query to prevent SQL injection
+      const values = [user.id, user.username, user.email, user.password];
+      const sql = `INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)`;
+
+      console.log("SQL Query:", sql);
+      console.log("Values:", values);
+
+      db.query(sql, values).then(
+        () => {
+          res.status(201).json({
+            message: 'User added successfully!',
+            username: req.body.username,
+            userId: user.id,
+            token: token
+          });
         }
-    );
+      ).catch(
+        (error) => {
+          console.error("Query Error:", error);
+          res.status(500).json({
+            error: error
+          });
+        }
+      )
+    }
+  )
 };
 
 // The "Login" Function
 
 exports.login = (req, res, next) => {
-    User.findOne({ email: req.body.email }).then(
-        (user) => {
-          if (!user) {
+
+  const values = [req.body.email];
+  const sql = `SELECT * FROM users WHERE email = $1;`;
+
+  db.query(sql, values).then(
+        (result) => {
+          
+          console.log(result);
+          if (!result || result.rows.length === 0) {
             return res.status(401).json({
               error: new Error('User not found!')
             });
           }
+
+          const user = result.rows[0];
+
           bcrypt.compare(req.body.password, user.password).then(
             (valid) => {
                 if (!valid) {
@@ -59,20 +78,20 @@ exports.login = (req, res, next) => {
                 let token;
                 if (req.body.remember) {
                   token = jwt.sign(
-                    { userId: user._id },
+                    { userId: user.id },
                     'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
                     { expiresIn: '30d' }
                   );
                 } else if (!req.body.remember) {
                   token = jwt.sign(
-                    { userId: user._id },
+                    { userId: user.id },
                     'quw78q3465yrt8q3b82fysdfgut34867q3rwey84867',
                     { expiresIn: '2h' }
                   );
                 }
 
                 res.status(200).json({
-                    userId: user._id,
+                    userId: user.id,
                     token: token,
                     username: user.username
                 });
@@ -98,21 +117,41 @@ exports.login = (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
+    console.log('TRYING');
     // Find all posts by authorId
-    const posts = await Post.find({ authorId: req.params.id });
+    const sql = 'SELECT * FROM posts WHERE authorid = $1';
+
+    const values = [req.params.id];
+    const retrievePosts = await db.query(sql, values);
+    let posts;
+    if (retrievePosts.rows.length !== 0) {
+      posts = retrievePosts.rows;
+    }
 
     // Delete posts and associated images
     for (const post of posts) {
-      const filename = post.image.split('/images/')[1];
-      await fs.unlink('images/' + filename);
-      await Post.deleteOne({ _id: post._id });
+      console.log('TRYING MORE')
+      let filename;
+      if (post.image && post.image !== null) {
+        filename = post.image.split('/images/')[1];
+        await fs.unlink('images/' + filename);
+      }
+      console.log(filename)
+      const deleteonesql = 'DELETE FROM posts WHERE id = $1'
+      const deletevalues = [post.id];
+      
+      await db.query(deleteonesql, deletevalues);
+      console.log('DONE');
     }
 
     // Delete posts based on authorId
-    await Post.deleteMany({ authorId: req.params.id });
+    const deletesql = 'DELETE FROM posts WHERE authorid = $1';
+    const deletevalues = [req.params.id]
+    await db.query(deletesql, deletevalues);
 
     // Delete user
-    await User.deleteOne({ _id: req.params.id });
+    const deleteusersql = 'DELETE FROM users WHERE id = $1'
+    await db.query(deleteusersql, deletevalues);
 
     res.status(200).json({
       message: 'Deleted!'
@@ -122,6 +161,19 @@ exports.delete = async (req, res, next) => {
       error: error
     });
   }
-
 }
 
+// The "Edit" Function
+
+exports.editProfile = (req, res, next) => {
+  try {
+    console.log(req.body);
+    res.status(500).json({
+      message: 'Success!'
+    })
+  } catch (error) {
+    res.status(400).json({
+      error: "ERROR"
+    })
+  }
+}

@@ -7,6 +7,8 @@ const express = require('express');
 
 const app = express();
 
+const { Client } = require('pg');
+
 const mongoose = require('mongoose');
 
 const path = require('path');
@@ -19,14 +21,33 @@ app.use(express.json());
 
 // Connecting to MongoDB
 
-mongoose.connect('mongodb+srv://kberlinco:A5JepmLyGaXNyX9i@cluster0.9hq0f78.mongodb.net/')
-    .then(() => {
-        console.log('Successfully connected to MongoDB Atlas!');
-    })
-    .catch((error) => {
-        console.log('Unable to connect to MongoDB Atlas!');
-        console.error(error);
-    });
+// mongoose.connect('mongodb+srv://kberlinco:A5JepmLyGaXNyX9i@cluster0.9hq0f78.mongodb.net/')
+//     .then(() => {
+//         console.log('Successfully connected to MongoDB Atlas!');
+//     })
+//     .catch((error) => {
+//         console.log('Unable to connect to MongoDB Atlas!');
+//         console.error(error);
+//     });
+
+// Connecting to PostgreSQL
+
+const client = new Client({
+    host: 'localhost',
+    port: '5432',
+    user: 'kyleberliner',
+    database: 'groupomania'
+})
+
+client.connect().then(
+    () => {
+        console.log('Successfully connected to PostgreSQL!');
+    }
+).catch((error) => {
+    console.log('unable to connect to PostgreSQL!');
+    console.log(error);
+})
+;
 
 
 // Header Middleware

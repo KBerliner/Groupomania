@@ -2,30 +2,26 @@
 
 const Post = require('../models/post');
 const fs = require('fs');
+const db = require('../db');
 
 // The "See" Function
 
 exports.see = (req, res, next) => {
-    Post.findOne({ _id: req.params.id }).then(
-        (post) => {
-            post.usersSeen.push(req.body.userId);
-            Post.updateOne({ _id: req.params.id }, post).then(
-                () => {
-                    res.status(201).json({
-                        message: 'Seen!',
-                    });
-                }
-            ).catch(
-                (error) => {
-                    res.status(400).json({
-                        error: error
-                    });
-                }
-            );
+    const sql = ('UPDATE posts SET usersseen = $1 WHERE id = $2');
+    const sqlUsersSeen = `{ "${req.body.usersSeen.join('", "')}" }`;
+    const sqlId = parseInt(req.params.id);
+    const values = [sqlUsersSeen, sqlId];
+    console.log(values);
+
+    db.query(sql, values).then(
+        () => {
+            res.status(201).json({
+                message: 'Seen!',
+            });
         }
     ).catch(
         (error) => {
-            res.status(500).json({
+            res.status(400).json({
                 error: error
             });
         }
@@ -35,48 +31,74 @@ exports.see = (req, res, next) => {
 // The "Like" and "Dislike" Function
 
 exports.likePost = (req, res, next) => {
-    Post.findOne({ _id: req.params.id }).then(
-        (post) => {
+    const findsql = 'SELECT * FROM posts WHERE id = $1';
+    const values = [req.params.id];
+    console.log(req.body)
+
+    db.query(findsql, values).then(
+        (result) => {
+            if (result.rows.length === 0) {
+                res.status(404).json({
+                    message: 'Post Not Found!'
+                })
+            };
+
+            const post = result.rows[0];
+            let updatesql;
+            let sqlarray;
+            let updatevalues = [];
+
             if (req.body.like == 1) {
-                    post.likes++;
-                    post.usersLiked.push(req.body.userId);
+                post.likes++;
+                post.usersliked.push(req.body.userId)
+                updatesql = 'UPDATE posts SET usersliked = $1, likes = $2 WHERE id = $3';
+                sqlarray = `{ "${post.usersliked.join('", "')}" }`;
+                updatevalues = [sqlarray, post.likes, req.params.id];
             } else if (req.body.like == -1) {
                 post.dislikes++;
-                post.usersDisliked.push(req.body.userId);
+                post.usersdisliked.push(req.body.userId);
+                updatesql = 'UPDATE posts SET usersdisliked = $1, dislikes = $2 WHERE id = $3';
+                updatevalues = [`{ "${post.usersdisliked.join('", "')}" }`, post.dislikes, req.params.id];
             } else {
-                
-                    if (post.usersLiked.includes(req.body.userId)) {
-                        let idKeyStart = post.usersLiked.indexOf(req.body.userId);
-                        let idKeyEnd = idKeyStart + 1;
-                        post.usersLiked.splice(idKeyStart, idKeyEnd);
-                        post.likes--;
-                    } else if (post.usersDisliked.includes(req.body.userId)) {
-                        let idKeyStart = post.usersDisliked.indexOf(req.body.userId);
-                        let idKeyEnd = idKeyStart + 1;
-                        post.usersDisliked.splice(idKeyStart, idKeyEnd);
-                        post.dislikes--;
-                    };
+                if (post.usersliked.includes(req.body.userId)) {
+                    let idKeyStart = post.usersliked.indexOf(req.body.userId);
+                    let idKeyEnd = idKeyStart + 1;
+                    post.usersliked.splice(idKeyStart, idKeyEnd);
+                    post.likes--;
+                    updatesql = 'UPDATE posts SET usersliked = $1, likes = $2 WHERE id = $3';
+                    updatevalues = [`{ "${post.usersliked.join('", "')}" }`, post.likes, req.params.id];
+                } else if (post.usersdisliked.includes(req.body.userId)) {
+                    let idKeyStart = post.usersdisliked.indexOf(req.body.userId);
+                    let idKeyEnd = idKeyStart + 1;
+                    post.usersdisliked.splice(idKeyStart, idKeyEnd);
+                    post.dislikes--;
+                    updatesql = 'UPDATE posts SET usersdisliked = $1, dislikes = $2 WHERE id = $3';
+                    updatevalues = [`{ "${post.usersdisliked.join('", "')}" }`, post.dislikes, req.params.id];
+                };
             };
-            Post.updateOne({ _id: req.params.id }, post).then(
+            db.query(updatesql, updatevalues).then(
                 () => {
-                    res.status(201).json({
-                        message: 'Liked!'
+                    res.status(200).json({
+                        message: 'Success!'
                     });
                 }
             ).catch(
                 (error) => {
-                    res.status(400).json({
+                    res.status(500).json({
                         error: error
-                    });
+                    })
                 }
-            );
+            )
         }
-    );
+    )
 };
 
 // The "Create" Function
 
 exports.createPost = (req, res, next) => {
+    const sql = 'INSERT INTO posts (author, authorid, title, caption, likes, dislikes, image, likesenabled, usersliked, usersdisliked, usersseen) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11);';
+    
+
     const url = req.protocol + '://' + req.get('host');
     const postBody = JSON.parse(req.body.post);
     if (req.file) {
@@ -90,9 +112,11 @@ exports.createPost = (req, res, next) => {
             dislikes: 0,
             usersLiked: [],
             usersDisliked: [],
+            usersSeen: [],
             likesEnabled: postBody.likesEnabled
         });
-        post.save().then(
+        const values = [post.author, post.authorId, post.title, post.caption, post.likes, post.dislikes, post.image, post.likesEnabled, '{}', '{}', '{}'];        console.log(values);
+        db.query(sql, values).then(
             () => {
                 res.status(201).json({
                     message: 'Created!'
@@ -117,7 +141,9 @@ exports.createPost = (req, res, next) => {
             usersDisliked: [],
             likesEnabled: postBody.likesEnabled
         });
-        post.save().then(
+        const values = [post.author, post.authorId, post.title, post.caption, post.likes, post.dislikes, null, post.likesEnabled, '{}', '{}', '{}'];
+        console.log(values)
+        db.query(sql, values).then(
             () => {
                 res.status(201).json({
                     message: 'Created!',
@@ -137,11 +163,18 @@ exports.createPost = (req, res, next) => {
 // The function to retrieve ONE post
 
 exports.getOnePost = (req, res, next) => {
-    Post.findOne({
-        _id: req.params.id
-    }).then(
-        (post) => {
-            res.status(200).json(post)
+
+    const sql = 'SELECT * FROM posts WHERE id = $1';
+    const values = [req.params.id];
+
+    db.query(sql, values).then(
+        (result) => {
+            if (result.rows.length === 0) {
+                res.status(400).json({
+                    error: error
+                })
+            }
+            res.status(200).json(result.rows[0])
         }
     ).catch(
         (error) => {
@@ -155,22 +188,27 @@ exports.getOnePost = (req, res, next) => {
 // The function to update ONE post
 
 exports.updatePost = (req, res, next) => {
-    let post = new Post({ _id: req.params.id });
+    const sql = 'SELECT * FROM posts WHERE id = $1';
+    const values = [req.params.id];
+    let post = new Post({ id: req.params.id });
     const postBody = JSON.parse(req.body.post);
+    console.log(req.file);
     if (req.file) {
         const url = req.protocol + '://' + req.get('host');
         post = {
             title: postBody.title,
             author: postBody.author,
             caption: postBody.caption,
-            image: url + '/' + req.file.path,
+            image: url + '/' + req.file.path
         };
-        Post.findOne({ _id: req.params.id }).then(
-            (post) => {
-                const filename = post.image.split('/images/')[1];
-                fs.unlink('images/' + filename, () => {
-                    console.log('Image Deleted!');
-                });
+        db.query(sql, values).then(
+            (result) => {
+                if (result.rows.length !== 0 && result.rows[0].image) {
+                    const filename = result.rows[0].image.split('/images/')[1];
+                    fs.unlink('images/' + filename, () => {
+                        console.log('Image Deleted!');
+                    });
+                }
             }
         ).catch(
             (error) => {
@@ -187,7 +225,10 @@ exports.updatePost = (req, res, next) => {
         };
     }
 
-    Post.updateOne({ _id: req.params.id }, post).then(
+    const updatesql = 'UPDATE posts SET title = $1, caption = $2, image = $3 WHERE id = $4';
+    const updatevalues = [post.title, post.caption, post.image, req.params.id];
+
+    db.query(updatesql, updatevalues).then(
         () => {
             res.status(201).json({
                 message: 'Post updated successfully!'
@@ -206,26 +247,31 @@ exports.updatePost = (req, res, next) => {
 
 exports.deletePost = (req, res, next) => {
     console.log('Deleting...');
-    Post.findOne({ _id: req.params.id }).then(
-        (post) => {
-            if (!post) {
+    const findsql = 'SELECT * FROM posts WHERE id = $1';
+    const deletesql = 'DELETE FROM posts WHERE id = $1';
+    const values = [req.params.id];
+
+    db.query(findsql, values).then(
+        (result) => {
+            if (!result || result.rows.length === 0) {
                 return res.status(404).json({
                     error: new Error('No such thing!')
                 });
             }
-            if (post.authorId !== req.auth.userId) {
+            if (result.rows[0].authorid !== req.auth.userId) {
                 return res.status(400).json({
                     error: new Error('Unauthorized request!')
                 });
             }
         }
     )
-    Post.findOne({ _id: req.params.id }).then(
-        (post) => {
+    db.query(findsql, values).then(
+        (result) => {
+            const post = result.rows[0];
             if (post.image) {
                 const filename = post.image.split('/images/')[1];
                 fs.unlink('images/' + filename, () => {
-                    Post.deleteOne({ _id: req.params.id }).then(
+                    db.query(deletesql, values).then(
                         () => {
                             res.status(200).json({
                                 message: 'Deleted!'
@@ -240,7 +286,7 @@ exports.deletePost = (req, res, next) => {
                     );
                 });
             } else {
-                Post.deleteOne({ _id: req.params.id }).then(
+                db.query(deletesql, values).then(
                     () => {
                         res.status(200).json({
                             message: 'Deleted!'
@@ -261,7 +307,10 @@ exports.deletePost = (req, res, next) => {
 // The function to delete all specific posts
 
 exports.deleteThese = (req, res, next) => {
-    Post.deleteMany({ authorId: req.params.authorId }).then(
+    const sql = 'DELETE FROM posts WHERE authorid = $1;';
+    const values = [req.params.authorId];
+
+    db.query(sql, values).then(
         () => {
             res.status(200).json({
                 message: 'Deleted!'
@@ -279,9 +328,9 @@ exports.deleteThese = (req, res, next) => {
 // The function to retrieve ALL posts
 
 exports.allPosts = (req, res, next) => {
-    Post.find().then(
-        (posts) => {
-            res.status(200).json(posts);
+    db.query('SELECT * FROM posts').then(
+        (results) => {
+            res.status(200).json(results.rows);
         }
     ).catch(
         (error) => {
@@ -289,5 +338,5 @@ exports.allPosts = (req, res, next) => {
                 error: error
             });
         }
-    );
+    )
 };

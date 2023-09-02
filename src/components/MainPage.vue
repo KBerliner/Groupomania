@@ -13,7 +13,7 @@
         </template>
     </MegaMenu>
     <div class="cardcontainer flex flex-column-reverse">
-        <Post v-for="post in postArray.length" :key="postArray[post - 1]._id" :post="postArray[post - 1]" :userId="this.userId" @edit="edit" @deletePost="deletePost" @unseen="this.unseenPosts++" @seen="seePost"></Post>
+        <Post v-for="post in postArray.length" :key="postArray[post - 1].id" :post="postArray[post - 1]" :userId="this.userId" @edit="edit" @deletePost="deletePost" @unseen="this.unseenPosts++" @seen="seePost"></Post>
     
         <div class="surface-card p-4 border-round flex flex-column card">
             <div class="text-3xl font-medium text-900 mb-3">Create A Post Here</div>
@@ -124,13 +124,14 @@ export default {
         deletePost(uid) {
             console.log('Test Delete: ', this.postArray);
             const index = this.postArray.findIndex(item => {
-                return item._id === uid;
+                return item.id === uid;
             });
             if (index !== -1) {
                 let idKeyStart = index;
                 let idKeyEnd = idKeyStart + 1;
                 console.log('Index found:', idKeyStart);
                 this.postArray.splice(idKeyStart, idKeyEnd);
+                console.log('New Array', this.postArray);
             } else {
                 console.log('Index not found.');
             }

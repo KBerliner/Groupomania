@@ -23,7 +23,7 @@
 export default {
     props: {
         post: {
-            _id: String,
+            id: String,
             title: String,
             caption: String,
             image: String
@@ -35,7 +35,8 @@ export default {
     ],
     methods: {
         handleImageUpload($event) {
-            this.image = $event.target.files[0];
+            this.post.image = $event.target.files[0];
+            console.log(typeof(this.post.image));
         },
         submitPost($event) {
             $event.preventDefault();
@@ -43,20 +44,31 @@ export default {
             console.log(this);
             const formData = new FormData();
 
-            let post = JSON.stringify({
-                title: this.post.title,
-                caption: this.post.caption,
-                _id: this.post._id
-            });
+            let post;
+
+            if (typeof(this.post.image) == 'object') {
+                post = JSON.stringify({
+                    title: this.post.title,
+                    caption: this.post.caption,
+                    id: this.post.id
+                });
+                formData.append("image", this.post.image);
+            } else {
+                post = JSON.stringify({
+                    title: this.post.title,
+                    caption: this.post.caption,
+                    id: this.post.id,
+                    image: this.post.image
+                });
+            }
 
             formData.append("post", post);
-            if (this.image) {
-                formData.append("image", this.image);
-            }
+            
+            console.log(this.post.image);
 
             return new Promise((resolve, reject) => {
                 let key = localStorage.getItem('validToken');
-                let uid = this.post._id;
+                let uid = this.post.id;
                 let request = new XMLHttpRequest();
                 request.open('PUT', `http://localhost:3000/api/${uid}`);
                 request.setRequestHeader('Authorization', 'Bearer ' + key);
@@ -73,6 +85,9 @@ export default {
                 }
             })
         }
+    },
+    created() {
+        console.log(this.post.image);
     }
 }
 </script>
