@@ -167,10 +167,25 @@ exports.delete = async (req, res, next) => {
 
 exports.editProfile = (req, res, next) => {
   try {
-    console.log(req.body);
-    res.status(500).json({
-      message: 'Success!'
-    })
+    console.log('REQUEST BODY: ', req.body, req.params.id);
+
+    const sql = 'UPDATE users SET username = $1 WHERE id = $2';
+    const values = [req.body.username, req.params.id];
+
+    db.query(sql, values).then(
+      () => {
+        res.status(200).json({
+          username: req.body.username
+        })
+      }
+
+    ).catch(
+      (error) => {
+        res.status(400).json({
+          error: error
+        })
+      }
+    )
   } catch (error) {
     res.status(400).json({
       error: "ERROR"

@@ -13,7 +13,7 @@
   ></MainPage>
   <CreatePost v-if="creatingPostNow" @back="creatingPostNow = false" @createdPost="creatingPostNow = false; this.newPost = true" :author="username" :authorId="userId"></CreatePost>
   <EditPost v-if="editingPostNow" :post="editingThisPost" @back="editingPostNow = false; editingThisPost = {}" @editedPost="this.updatedPost = true; editingPostNow = false; editingThisPost = {}"></EditPost>
-  <Profile v-if="editingProfile" :username="username" :userId="userId" @back="editingProfile = false;" />
+  <Profile v-if="editingProfile" :username="username" :userId="userId" @back="editingProfile = false;" @newUser="newUser"/>
 </template>
 
 <script>
@@ -50,6 +50,11 @@ export default {
     }
   },
   methods: {
+    newUser(username) {
+      console.log(username);
+      this.editingProfile = false;
+      this.username = username;
+    },
     edit(obj) {
       this.editingPostNow = true;
       this.editingThisPost = obj;

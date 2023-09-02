@@ -19,7 +19,7 @@ export default {
     data() {
         return {
             user: this.username,
-            id: this.id
+            id: this.userId
         }
     },
     props: {
@@ -27,7 +27,8 @@ export default {
         userId: ''
     },
     emits: [
-        'back'
+        'back',
+        'newUser'
     ],
     methods: {
         submit($event) {
@@ -38,11 +39,16 @@ export default {
                     let request = new XMLHttpRequest();
                     request.open('PUT', `http://localhost:3000/api/${this.id}/edit`);
                     request.setRequestHeader('Authorization', 'Bearer ' + key);
+                    request.setRequestHeader('Content-Type', 'application/json');
+                    request.send(JSON.stringify({
+                        username: this.user
+                    }))
                     request.onreadystatechange = () => {
                         if (request.readyState == 4) {
                             if (request.status === 200 || request.status === 201) {
                                 resolve(JSON.parse(request.response));
-                                this.$emit('back');
+                                console.log(JSON.parse(request.response));
+                                this.$emit('newUser', JSON.parse(request.response).username);
                             } else {
                                 reject(JSON.parse(request.response));
                             }
