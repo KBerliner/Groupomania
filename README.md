@@ -7,12 +7,12 @@ npm install
 
 ### Compiles and hot-reloads for development
 ```
-npm run serve
+vue run
 ```
 
-### Compiles and minifies for production
+### To connect to Database
 ```
-npm run build
+nodemon server in src file
 ```
 
 ### Customize configuration
