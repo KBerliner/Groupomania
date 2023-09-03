@@ -51,7 +51,6 @@ export default {
   },
   methods: {
     newUser(username) {
-      console.log(username);
       this.editingProfile = false;
       this.username = username;
     },
@@ -100,7 +99,6 @@ export default {
                             this.login(JSON.parse(request.response).userId, JSON.parse(request.response).username, JSON.parse(request.response).token);
                             resolve(JSON.parse(request.response));
                         } else {
-                          console.log('not persisting');
                           this.logout();
                         }
                     }

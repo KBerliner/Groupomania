@@ -11,7 +11,6 @@ exports.see = (req, res, next) => {
     const sqlUsersSeen = `{ "${req.body.usersSeen.join('", "')}" }`;
     const sqlId = parseInt(req.params.id);
     const values = [sqlUsersSeen, sqlId];
-    console.log(values);
 
     db.query(sql, values).then(
         () => {
@@ -33,7 +32,6 @@ exports.see = (req, res, next) => {
 exports.likePost = (req, res, next) => {
     const findsql = 'SELECT * FROM posts WHERE id = $1';
     const values = [req.params.id];
-    console.log(req.body)
 
     db.query(findsql, values).then(
         (result) => {
@@ -115,7 +113,7 @@ exports.createPost = (req, res, next) => {
             usersSeen: [],
             likesEnabled: postBody.likesEnabled
         });
-        const values = [post.author, post.authorId, post.title, post.caption, post.likes, post.dislikes, post.image, post.likesEnabled, '{}', '{}', '{}'];        console.log(values);
+        const values = [post.author, post.authorId, post.title, post.caption, post.likes, post.dislikes, post.image, post.likesEnabled, '{}', '{}', '{}'];
         db.query(sql, values).then(
             () => {
                 res.status(201).json({
@@ -142,7 +140,6 @@ exports.createPost = (req, res, next) => {
             likesEnabled: postBody.likesEnabled
         });
         const values = [post.author, post.authorId, post.title, post.caption, post.likes, post.dislikes, null, post.likesEnabled, '{}', '{}', '{}'];
-        console.log(values)
         db.query(sql, values).then(
             () => {
                 res.status(201).json({
@@ -192,7 +189,6 @@ exports.updatePost = (req, res, next) => {
     const values = [req.params.id];
     let post = new Post({ id: req.params.id });
     const postBody = JSON.parse(req.body.post);
-    console.log(req.file);
     if (req.file) {
         const url = req.protocol + '://' + req.get('host');
         post = {
@@ -246,7 +242,6 @@ exports.updatePost = (req, res, next) => {
 // The "Delete" Function
 
 exports.deletePost = (req, res, next) => {
-    console.log('Deleting...');
     const findsql = 'SELECT * FROM posts WHERE id = $1';
     const deletesql = 'DELETE FROM posts WHERE id = $1';
     const values = [req.params.id];

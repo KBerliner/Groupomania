@@ -88,7 +88,6 @@ export default {
             });
         },
         like() {
-            console.log(this.id);
                 if (!this.post.usersliked.includes(this.userId) && !this.post.usersdisliked.includes(this.userId)) {
                     this.likes++;
                     this.usersliked.push(this.userId);

@@ -54,7 +54,6 @@ export default {
                 let request = new XMLHttpRequest();
                 request.open('POST', 'http://localhost:3000/api/signup');
                 request.setRequestHeader('Content-Type', 'application/json');
-                console.log('Line 44: ', JSON.parse(user));
                 request.send(user);
                 request.onreadystatechange = () => {
                     if (request.readyState == 4) {

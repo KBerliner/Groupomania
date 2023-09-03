@@ -36,12 +36,10 @@ export default {
     methods: {
         handleImageUpload($event) {
             this.post.image = $event.target.files[0];
-            console.log(typeof(this.post.image));
         },
         submitPost($event) {
             $event.preventDefault();
 
-            console.log(this);
             const formData = new FormData();
 
             let post;
@@ -63,8 +61,6 @@ export default {
             }
 
             formData.append("post", post);
-            
-            console.log(this.post.image);
 
             return new Promise((resolve, reject) => {
                 let key = localStorage.getItem('validToken');
@@ -85,9 +81,6 @@ export default {
                 }
             })
         }
-    },
-    created() {
-        console.log(this.post.image);
     }
 }
 </script>

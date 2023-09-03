@@ -33,7 +33,6 @@ export default {
     methods: {
         submit($event) {
             $event.preventDefault();
-            console.log('submitting...');
             return new Promise((resolve, reject) => {
                     let key = 'eyJhbGciOiJIUzI1NiJ9.e30.QXKHqZhQAO4ZOTEDRNAxc4CD1jblcF_BakFSjA3srJc';
                     let request = new XMLHttpRequest();
@@ -47,7 +46,6 @@ export default {
                         if (request.readyState == 4) {
                             if (request.status === 200 || request.status === 201) {
                                 resolve(JSON.parse(request.response));
-                                console.log(JSON.parse(request.response));
                                 this.$emit('newUser', JSON.parse(request.response).username);
                             } else {
                                 reject(JSON.parse(request.response));

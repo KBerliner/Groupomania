@@ -25,8 +25,6 @@ exports.signup = (req, res, next) => {
       const values = [user.id, user.username, user.email, user.password];
       const sql = `INSERT INTO users (id, username, email, password) VALUES ($1, $2, $3, $4)`;
 
-      console.log("SQL Query:", sql);
-      console.log("Values:", values);
 
       db.query(sql, values).then(
         () => {
@@ -59,7 +57,6 @@ exports.login = (req, res, next) => {
   db.query(sql, values).then(
         (result) => {
           
-          console.log(result);
           if (!result || result.rows.length === 0) {
             return res.status(401).json({
               error: new Error('User not found!')
@@ -117,7 +114,6 @@ exports.login = (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
   try {
-    console.log('TRYING');
     // Find all posts by authorId
     const sql = 'SELECT * FROM posts WHERE authorid = $1';
 
@@ -130,18 +126,15 @@ exports.delete = async (req, res, next) => {
 
     // Delete posts and associated images
     for (const post of posts) {
-      console.log('TRYING MORE')
       let filename;
       if (post.image && post.image !== null) {
         filename = post.image.split('/images/')[1];
         await fs.unlink('images/' + filename);
       }
-      console.log(filename)
       const deleteonesql = 'DELETE FROM posts WHERE id = $1'
       const deletevalues = [post.id];
       
       await db.query(deleteonesql, deletevalues);
-      console.log('DONE');
     }
 
     // Delete posts based on authorId
@@ -167,7 +160,6 @@ exports.delete = async (req, res, next) => {
 
 exports.editProfile = (req, res, next) => {
   try {
-    console.log('REQUEST BODY: ', req.body, req.params.id);
 
     const sql = 'UPDATE users SET username = $1 WHERE id = $2';
     const values = [req.body.username, req.params.id];

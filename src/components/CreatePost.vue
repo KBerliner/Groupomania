@@ -84,10 +84,8 @@ export default {
         validate() {
             if (this.title && this.caption) {
                 document.getElementById('submit').classList.remove('p-disabled');
-                console.log('Testing', this.title, this.caption, document.getElementById('submit'));
             } else {
                 document.getElementById('submit').classList.add('pdisabled');
-                console.log('testing', this.title, this.caption, document.getElementById('submit'))
             }
         }
     }
