@@ -33,8 +33,8 @@ app.use(express.json());
 // Connecting to PostgreSQL
 
 const client = new Client({
-    host: 'localhost',
-    port: '5432',
+    host: '192.168.1.21',
+    port: '5263',
     user: 'kyleberliner',
     database: 'groupomania'
 })
